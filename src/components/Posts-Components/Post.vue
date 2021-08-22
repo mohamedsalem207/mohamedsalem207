@@ -1,13 +1,6 @@
 <template>
-  <!-- This is Header Will Apprear Incase of No Posts -->
-  <h3
-    v-if="posts.length == 0"
-    class="no-post text-center w-100 mb-4 fs-4 fw-bold"
-  >
-    There are no Posts to Show
-  </h3>
   <!-- Post Container -->
-  <div v-else class="post mb-4 bg-white p-3 rounded-3">
+  <div class="post mb-4 bg-white p-3 rounded-3">
     <!-- Post Header -->
     <div class="post-header mb-4">
       <div class="d-flex align-items-center justify-content-between">
@@ -42,7 +35,7 @@
           ></i>
           <div class="delete-post position-absolute d-none end-0">
             <button
-              @click="deletePost(post)"
+              @click="$emit('sendDeltedPost', post)"
               class="
                 d-block
                 w-100
@@ -67,9 +60,11 @@
         {{ textPost }}
       </h3>
       <div
-        :class="`w-100 ${imgsPost.length == 1 ? 'single-img' : ''}${
+        :class="`w-100 ${
+          imgsPost.length == 1 ? 'single-img d-flex justify-content-center' : ''
+        }${
           post.imgsPost.length == 2
-            ? 'two-imgs d-flex align-items-center justify-content-between'
+            ? 'two-imgs d-flex align-items-center justify-content-around'
             : ''
         }${
           imgsPost.length >= 3
@@ -82,7 +77,7 @@
           :key="img"
           :src="img"
           @click="$emit('sendImgSrc', img)"
-          :class="`${post.imgsPost.length == 1 ? 'w-100 ' : ''} rounded-3`"
+          class="mx-2 rounded-3"
           alt="post-img"
         />
       </div>
@@ -130,12 +125,9 @@
       <div
         class="comment p-2 d-flex align-items-center justify-content-center"
         @click="focusCommentInput($event)"
-        :for="`postInput${post.id}`"
+        :for="`postInput${id}`"
       >
-        <i
-          class="fs-5 far fa-comment-dots me-2"
-          :for="`postInput${post.id}`"
-        ></i>
+        <i class="fs-5 far fa-comment-dots me-2" :for="`postInput${id}`"></i>
         <span class="fs-6 fw-bold" :for="`postInput${id}`">Comment</span>
       </div>
       <!-- Share Post -->
@@ -160,7 +152,7 @@
       <textarea
         rows="1"
         @keypress="addComment($event, post)"
-        placeholder="Add a Comment"
+        :placeholder="`${firstName}, Add a Comment?`"
         class="form-control rounded-3 border-0"
         :id="`postInput${post.id}`"
       ></textarea>
@@ -219,92 +211,11 @@ document.body.onclick = function () {
 };
 export default {
   name: "Post",
-  emits: ["sendImgSrc", "postShared"],
+  emits: ["sendImgSrc", "postShared", "sendDeltedPost"],
   data() {
     return {
       profileName: "Mohamed Salem",
       profileImg: require("@/assets/Profile-Images/profile.png"),
-      posts: [
-        {
-          id: 1,
-          postProfileImg: require("@/assets/Profile-Images/first-profile.jpg"),
-          postProfileName: "Moustafa Mohamed",
-          postDate: "12 hours ago",
-          textPost: "One Of My Favourite Designs.",
-          imgsPost: [require("@/assets/Posts-Images/1.png")],
-          like: 5,
-          isLiked: true,
-          comments: [],
-          share: 2,
-        },
-        {
-          id: 2,
-          postProfileImg: require("@/assets/Profile-Images/second-profile.jpg"),
-          postProfileName: "Ali Ahmed",
-          postDate: "2 hours ago",
-          textPost:
-            "This was one of the most epic journeys, that i’ve got myself involved in. Maybe one of the most memorizable in my entire life!",
-          imgsPost: [
-            require("@/assets/Posts-Images/2.jpg"),
-            require("@/assets/Posts-Images/3.jpg"),
-          ],
-          like: 0,
-          isLiked: false,
-          comments: [],
-          share: 0,
-        },
-        {
-          id: 3,
-          postProfileImg: require("@/assets/Profile-Images/third-profile.png"),
-          postProfileName: "moustafa ahmed",
-          postDate: "10 minutes ago",
-          textPost: "Group of Similar Images.",
-          imgsPost: [
-            require("@/assets/Posts-Images/6.jpg"),
-            require("@/assets/Posts-Images/7.jpg"),
-            require("@/assets/Posts-Images/8.jpg"),
-          ],
-          like: 0,
-          isLiked: false,
-          comments: [],
-          share: 0,
-        },
-        {
-          id: 4,
-          postProfileImg: require("@/assets/Profile-Images/forth-profile.jpg"),
-          postProfileName: "mohamed ahmed",
-          postDate: "50 minutes ago",
-          textPost: "",
-          imgsPost: [
-            require("@/assets/Posts-Images/10.jpg"),
-            require("@/assets/Posts-Images/12.jpg"),
-            require("@/assets/Posts-Images/background.jpg"),
-            require("@/assets/Posts-Images/care.png"),
-          ],
-          like: 0,
-          isLiked: false,
-          comments: [],
-          share: 0,
-        },
-        {
-          id: 5,
-          postProfileImg: require("@/assets/Profile-Images/fifth-profile.jpg"),
-          postProfileName: "Ahmed Salem",
-          postDate: "1 day ago",
-          textPost: "",
-          imgsPost: [
-            require("@/assets/Posts-Images/clock.jpg"),
-            require("@/assets/Posts-Images/contact.png"),
-            require("@/assets/Posts-Images/choose-us.jpg"),
-            require("@/assets/Posts-Images/design.jpg"),
-            require("@/assets/Posts-Images/Editing.png"),
-          ],
-          like: 0,
-          isLiked: false,
-          comments: [],
-          share: 0,
-        },
-      ],
     };
   },
   methods: {
@@ -346,14 +257,18 @@ export default {
       el.target.nextElementSibling.classList.toggle("d-none");
     },
     deletePost(item) {
-      return (this.posts = this.posts.filter((post) => post.id !== item.id));
+      return (this.$store.state.posts = this.$store.state.posts.filter(
+        (post) => post.id !== item.id
+      ));
     },
   },
   props: [
+    "posts",
     "post",
     "id",
     "postProfileImg",
     "postProfileName",
+    "firstName",
     "postDate",
     "textPost",
     "imgsPost",
@@ -375,7 +290,6 @@ export default {
   cursor: pointer;
 }
 
-h3.no-post,
 .post-owner h3,
 .post-text,
 .like,
@@ -416,9 +330,14 @@ h3.no-post,
   font-size: 15px;
 }
 
+.single-img img {
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+
 .two-imgs img,
 .multiple-imgs img {
-  width: 49% !important;
+  max-width: 47.5% !important;
 }
 
 .multiple-imgs img:not(img:first-of-type):not(img:nth-of-type(2)) {

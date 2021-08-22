@@ -56,13 +56,14 @@
         </div>
         <div class="creation-post-content">
           <textarea
-            v-model="newPost.postText"
+            v-model="newPost.textPost"
             rows="1"
+            @keypress="newPostText"
             :placeholder="`What do You Think ${firstName}`"
             class="form-control mb-3 rounded-3 border-0"
           ></textarea>
           <div
-            v-if="newPost.postImg.length > 0"
+            v-if="newPost.imgsPost.length > 0"
             class="
               new-post-imgs
               p-3
@@ -76,11 +77,11 @@
             "
           >
             <img
-              v-for="img in newPost.postImg"
+              v-for="img in newPost.imgsPost"
               :key="img"
-              :src="newPost.postImg"
+              :src="img"
               :class="`${
-                newPost.postImg.length == 1
+                newPost.imgsPost.length == 1
                   ? 'one-img w-100 h-100'
                   : 'multi-imgs'
               } d-block rounded-3`"
@@ -113,7 +114,7 @@
             <span>Add Image</span>
           </label>
           <button
-            @click="addNewPost"
+            @click="addNewPost(), hideNewPostPopup(), overflowAuto()"
             :disabled="isDisabled"
             class="btn btn-primary d-block w-100 p-2 fs-5 rounded-3"
           >
@@ -247,34 +248,29 @@
     </div>
     <!-- Calling of The Stories Component -->
     <Stories />
-    <!-- Create Post Box -->
-    <div
+    <!-- Calling of Create Post Component -->
+    <CreatePost
       @click="showNewPostPopup(), overflowHidden()"
-      class="
-        create-post
-        bg-white
-        p-3
-        mb-4
-        rounded-3
-        d-flex
-        justify-content-between
-        align-items-center
-      "
+      :profileImg="profileImg"
+      :firstName="firstName"
+    />
+    <!-- This is Header Will Apprear Incase of No Posts -->
+    <h3
+      v-if="$store.state.posts == 0"
+      class="no-post text-center w-100 mt-3 mb-4 fs-4 fw-bold"
     >
-      <div class="d-flex align-items-center w-100">
-        <img :src="profileImg" class="profile-img me-3" alt="profile-img" />
-        <h3 class="p-2 h6 fw-bold text-capitalize mb-0 w-100 rounded-3">
-          what’s <span class="text-lowercase">new</span>, {{ firstName }}?
-        </h3>
-      </div>
-    </div>
+      There are no Posts to Show
+    </h3>
     <!-- Calling of Post Component -->
     <Post
-      v-for="post in posts"
-      :key="post.id"
+      v-for="(post, i) in posts"
+      :key="i"
+      :posts="posts"
       :post="post"
+      :id="post.id"
       :postProfileImg="post.postProfileImg"
       :postProfileName="post.postProfileName"
+      :firstName="firstName"
       :postDate="post.postDate"
       :textPost="post.textPost"
       :imgsPost="post.imgsPost"
@@ -284,6 +280,7 @@
       :share="post.share"
       @postShared="getSharedPost"
       @sendImgSrc="getImgSrc"
+      @sendDeltedPost="deletePost"
     />
   </div>
 </template>
@@ -291,6 +288,7 @@
 <script>
 import Stories from "@/components/Posts-Components/Stories";
 import Post from "@/components/Posts-Components/Post";
+import CreatePost from "@/components/Posts-Components/Create-Post";
 export default {
   name: "Posts",
   data() {
@@ -299,94 +297,20 @@ export default {
       profileImg: require("@/assets/Profile-Images/profile.png"),
       popupImgSrc: "",
       sharedPostFrom: "",
-      postShared: "",
+      postShared: 0,
       // Will Passed To Profile Page
       sharedPosts: [],
       // New Post Data
-      posts: [
-        {
-          id: 1,
-          postProfileImg: require("@/assets/Profile-Images/first-profile.jpg"),
-          postProfileName: "Moustafa Mohamed",
-          postDate: "12 hours ago",
-          textPost: "One Of My Favourite Designs.",
-          imgsPost: [require("@/assets/Posts-Images/1.png")],
-          like: 5,
-          isLiked: true,
-          comments: [],
-          share: 2,
-        },
-        {
-          id: 2,
-          postProfileImg: require("@/assets/Profile-Images/second-profile.jpg"),
-          postProfileName: "Ali Ahmed",
-          postDate: "2 hours ago",
-          textPost:
-            "This was one of the most epic journeys, that i’ve got myself involved in. Maybe one of the most memorizable in my entire life!",
-          imgsPost: [
-            require("@/assets/Posts-Images/2.jpg"),
-            require("@/assets/Posts-Images/3.jpg"),
-          ],
-          like: 0,
-          isLiked: false,
-          comments: [],
-          share: 0,
-        },
-        {
-          id: 3,
-          postProfileImg: require("@/assets/Profile-Images/third-profile.png"),
-          postProfileName: "moustafa ahmed",
-          postDate: "10 minutes ago",
-          textPost: "Group of Similar Images.",
-          imgsPost: [
-            require("@/assets/Posts-Images/6.jpg"),
-            require("@/assets/Posts-Images/7.jpg"),
-            require("@/assets/Posts-Images/8.jpg"),
-          ],
-          like: 0,
-          isLiked: false,
-          comments: [],
-          share: 0,
-        },
-        {
-          id: 4,
-          postProfileImg: require("@/assets/Profile-Images/forth-profile.jpg"),
-          postProfileName: "mohamed ahmed",
-          postDate: "50 minutes ago",
-          textPost: "",
-          imgsPost: [
-            require("@/assets/Posts-Images/10.jpg"),
-            require("@/assets/Posts-Images/12.jpg"),
-            require("@/assets/Posts-Images/background.jpg"),
-            require("@/assets/Posts-Images/care.png"),
-          ],
-          like: 0,
-          isLiked: false,
-          comments: [],
-          share: 0,
-        },
-        {
-          id: 5,
-          postProfileImg: require("@/assets/Profile-Images/fifth-profile.jpg"),
-          postProfileName: "Ahmed Salem",
-          postDate: "1 day ago",
-          textPost: "",
-          imgsPost: [
-            require("@/assets/Posts-Images/clock.jpg"),
-            require("@/assets/Posts-Images/contact.png"),
-            require("@/assets/Posts-Images/choose-us.jpg"),
-            require("@/assets/Posts-Images/design.jpg"),
-            require("@/assets/Posts-Images/Editing.png"),
-          ],
-          like: 0,
-          isLiked: false,
-          comments: [],
-          share: 0,
-        },
-      ],
       newPost: {
-        postText: "",
-        postImg: [],
+        postProfileName: "Mohamed Salem",
+        postProfileImg: require("@/assets/Profile-Images/profile.png"),
+        postDate: "now",
+        textPost: "",
+        imgsPost: [],
+        like: 0,
+        isLiked: false,
+        comments: [],
+        share: 0,
       },
     };
   },
@@ -405,10 +329,26 @@ export default {
     },
     // Function That Get The New Post Img
     getNewPostImg(e) {
-      console.log(e.target.files);
+      e.target.files.forEach((file) => {
+        this.newPost.imgsPost.push(URL.createObjectURL(file));
+      });
     },
+    // Function That Add New Post
     addNewPost(e) {
-      console.log(this.newPost.postText);
+      this.$store.state.posts.unshift(JSON.parse(JSON.stringify(this.newPost)));
+      this.newPost.textPost = "";
+      this.newPost.imgsPost = [];
+    },
+    // Function That Control The Field of Adding New Post Text
+    newPostText(e) {
+      if (e.keyCode == 13 && !e.shiftKey) {
+        e.preventDefault();
+      } else if (e.keyCode == 13 && e.shiftKey) {
+        e.target.setAttribute(
+          "rows",
+          parseInt(e.target.getAttribute("rows")) + 1
+        );
+      }
     },
     // Function That Hide New Post Popup
     hideNewPostPopup() {
@@ -441,7 +381,7 @@ export default {
         .querySelector(".post-shared-notification")
         .classList.add("animation");
       // Removing The Animation Class from The Top Shared Successfully Notification After The Animation Ended
-      setTimeout((_) => {
+      setTimeout(() => {
         // Enable The Share Button Again
         el.target.disabled = false;
         document
@@ -459,6 +399,12 @@ export default {
     hideImg() {
       document.querySelector(".show-post-img").classList.add("d-none");
     },
+    // Function That Delete The Required Post
+    deletePost(value) {
+      this.$store.state.posts = this.$store.state.posts.filter(
+        (post) => post != value
+      );
+    },
   },
   computed: {
     // Function That Getting The First Name of The ProfileName
@@ -467,14 +413,22 @@ export default {
     },
     // Function That Enable and Disable The Post Button
     isDisabled() {
-      return /\S/.test(this.newPost.postText) || this.newPost.postImg.length > 0
+      return /\S/.test(this.newPost.textPost) ||
+        this.newPost.imgsPost.length > 0
         ? false
         : true;
     },
+    posts() {
+      return this.$store.state.posts;
+    },
+  },
+  created() {
+    // console.log(this.$store.state.count);
   },
   components: {
     Stories,
     Post,
+    CreatePost,
   },
 };
 </script>
@@ -508,8 +462,13 @@ export default {
   animation: animate 2.75s 1 ease-in-out;
 }
 
+.create-post-popup {
+  overflow-y: auto !important;
+}
+
 .create-post-popup h3,
-.create-post-popup label {
+.create-post-popup label,
+h3.no-post {
   color: #2d435e;
 }
 
@@ -584,12 +543,9 @@ export default {
   max-height: 90vh;
 }
 
-.show-post-img i {
-  cursor: pointer;
-}
-
 .create-post h3,
 .img-container i,
+.show-post-img i,
 .create-post-popup label,
 .close-icon {
   cursor: pointer;

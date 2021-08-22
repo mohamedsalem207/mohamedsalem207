@@ -33,7 +33,7 @@
   <!-- Details Popup -->
   <div
     v-if="detailsPopup"
-    @click="hideDetailsPopup"
+    @click="hideDetailsPopup(), overflowAuto()"
     class="
       details
       position-fixed
@@ -57,14 +57,19 @@
         class="form-control mb-3 rounded-3 p-2"
         v-model="userWork"
       />
-      <!-- Edit You Educations -->
-      <h3 class="fs-5 fw-bold mb-2">Education School or Faculty</h3>
+      <!-- Edit Secondary School -->
+      <h3 class="fs-5 fw-bold mb-2">Secondary School</h3>
       <input
-        v-for="place in userEducation"
-        :key="place"
+        type="text"
+        class="form-control mb-3 rounded-3 p-2"
+        v-model="secondarySchool"
+      />
+      <!-- Edit You Educations -->
+      <h3 class="fs-5 fw-bold mb-3">Education School or Faculty</h3>
+      <input
         type="text"
         class="form-control mb-2 rounded-3 p-2"
-        :value="place"
+        v-model="userGraduated"
       />
       <!-- Edit Your Stay Place -->
       <h3 class="fs-5 fw-bold mt-3 mb-2">Place of Residence</h3>
@@ -75,7 +80,7 @@
       />
       <!-- Edit The Marital Status -->
       <h3 class="fs-5 fw-bold mb-2">Marital Status</h3>
-      <select class="form-select mb-4 rounded-3 p-2" v-model="userState">
+      <select class="form-select mb-0 rounded-3 p-2" v-model="userState">
         <option id="1" disabled>Select marital status</option>
         <option id="2">Single</option>
         <option id="3">Married</option>
@@ -108,13 +113,30 @@
             />
           </div>
         </div>
+        <!-- Bio -->
+        <div
+          class="bio d-flex justify-content-center align-items-center m-0 mx-0"
+        >
+          <p class="fs-6 fw-bold bg-white p-2 px-4 rounded-3">{{ bio }}</p>
+        </div>
+        <!-- This is Header Will Apprear Incase of No Posts -->
+        <h3
+          v-if="postsLength == 0"
+          class="no-post text-center w-100 mt-3 mb-4 fs-4 fw-bold"
+        >
+          There are no Posts to Show
+        </h3>
         <!-- Calling of Post Component -->
         <Post
+          v-else
           v-for="post in posts"
           :key="post.id"
+          :posts="$store.state.posts"
           :post="post"
+          :id="post.id"
           :postProfileImg="profileImg"
           :postProfileName="profileName"
+          :firstName="firstName"
           :postDate="post.postDate"
           :textPost="post.textPost"
           :imgsPost="post.imgsPost"
@@ -123,32 +145,63 @@
           :comments="post.comments"
           :share="post.share"
           @sendImgSrc="getImgSrc"
+          @sendDeltedPost="deletePost"
         />
       </div>
-      <div class="personal-info col-md-3 cols-12 position-sticky rounded-3">
+      <!-- Personal Info -->
+      <div
+        class="
+          personal-info
+          col-md-3
+          cols-12
+          position-sticky
+          rounded-3
+          overflow-auto
+        "
+      >
         <h3 class="title fs-6 fw-bold mb-3 px-4 text-uppercase">Abstract</h3>
-        <div class="personal-info-details bg-white rounded-3 p-4">
+        <div
+          class="personal-info-details bg-white mb-4 rounded-3 p-4"
+          v-if="
+            userWork ||
+            secondarySchool ||
+            userGraduated ||
+            userPlace ||
+            userState
+          "
+        >
           <!-- Place Where User Works -->
-          <h4 class="fs-6 w-100 d-flex align-items-center mb-3">
+          <h4 class="fs-6 w-100 d-flex align-items-center mb-3" v-if="userWork">
             <i class="fas fa-briefcase fs-5 me-3"></i>
             <span>{{ userWork }}</span>
           </h4>
-          <!-- Place Where The User Studies in and Studied at -->
-          <h4
-            v-for="education in userEducation"
-            :key="education"
-            class="fs-6 w-100 d-flex align-items-center mb-3"
-          >
-            <i class="fas fa-graduation-cap fs-5 me-3"></i>
-            <span>{{ education }}</span>
+          <!-- Secondary School Where The User Studies in -->
+          <h4 class="fs-6 w-100 mb-3">
+            <div class="d-flex align-items-center" v-if="secondarySchool">
+              <i class="fas fa-graduation-cap fs-5 me-3"></i>
+              <span>{{ secondarySchool }}</span>
+            </div>
+          </h4>
+          <!-- Place Where The User Studies in and Graduated -->
+          <h4 class="fs-6 w-100 mb-3">
+            <div class="d-flex align-items-center" v-if="userGraduated">
+              <i class="fas fa-graduation-cap fs-5 me-3"></i>
+              <span>{{ userGraduated }}</span>
+            </div>
           </h4>
           <!-- Place Where The User Lives in -->
-          <h4 class="fs-6 w-100 d-flex align-items-center mb-3">
+          <h4
+            class="fs-6 w-100 d-flex align-items-center mb-3"
+            v-if="userPlace"
+          >
             <i class="fas fa-home fs-5 me-3"></i>
             <span>{{ userPlace }}</span>
           </h4>
           <!-- User Marriage State -->
-          <h4 class="fs-6 w-100 d-flex align-items-center mb-3">
+          <h4
+            class="fs-6 w-100 d-flex align-items-center mb-3"
+            v-if="userState"
+          >
             <i class="fas fa-heart fs-5 me-3"></i>
             <span>{{ userState }}</span>
           </h4>
@@ -169,6 +222,33 @@
             Edit Details
           </button>
         </div>
+        <div class="p-4 mb-3 bg-white rounded-3 no-personal-info" v-else>
+          <h3 class="text-center w-100 mb-0 fs-6 text-danger fw-bold">
+            Personal information deleted
+          </h3>
+        </div>
+        <!-- Followers Number -->
+        <h3 class="title fs-6 fw-bold mb-3 px-4 text-uppercase">statistics</h3>
+        <div class="followers bg-white rounded-3">
+          <!-- Statistics -->
+          <div
+            class="
+              stat
+              d-flex
+              align-items-center
+              p-2
+              px-4
+              border border-1 border-top-0 border-start-0 border-end-0
+            "
+            v-for="(stat, i) in stats"
+            :key="i"
+          >
+            <h4 class="mb-0 text-capitalize fw-bold me-3">
+              {{ stat.statTitle }} :
+            </h4>
+            <p class="mb-0">{{ i == 0 ? postsLength : stat.statNum }}</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -177,6 +257,7 @@
 <script>
 import LeftSide from "@/components/Main-Components/LeftSide";
 import Post from "@/components/Posts-Components/Post";
+import CreatePost from "@/components/Posts-Components/Create-Post";
 export default {
   name: "Profile",
   data() {
@@ -184,60 +265,30 @@ export default {
       coverImg: require("@/assets/Profile-Images/cover.jpg"),
       profileImg: require("@/assets/Profile-Images/profile.png"),
       profileName: "Mohamed Salem",
+      bio: "Hello, welcome to my account",
       popupImgSrc: "",
-      posts: [
-        {
-          id: 1,
-          postDate: "12 hours ago",
-          textPost: "One Of My Favourite Designs.",
-          imgsPost: [require("@/assets/Posts-Images/1.png")],
-          like: 5,
-          isLiked: true,
-          comments: [],
-          share: 2,
-        },
-        {
-          id: 1,
-          postDate: "2 hours ago",
-          textPost:
-            "This was one of the most epic journeys, that i’ve got myself involved in. Maybe one of the most memorizable in my entire life!",
-          imgsPost: [
-            require("@/assets/Posts-Images/2.jpg"),
-            require("@/assets/Posts-Images/3.jpg"),
-          ],
-          like: 0,
-          isLiked: false,
-          comments: [],
-          share: 0,
-        },
-        {
-          id: 1,
-          postDate: "10 minutes ago",
-          textPost: "Group of Similar Images.",
-          imgsPost: [
-            require("@/assets/Posts-Images/6.jpg"),
-            require("@/assets/Posts-Images/7.jpg"),
-            require("@/assets/Posts-Images/8.jpg"),
-          ],
-          like: 0,
-          isLiked: false,
-          comments: [],
-          share: 0,
-        },
-      ],
       userWork: "Front-End-Web Developer at Extra Soft Company",
-      userEducation: [
-        "Studies at Faculty of Compouters and Information Zagazig University",
-        "Studied at Saad Eldin Shrief Secondary School",
-      ],
+      secondarySchool: "Saad Eldin Shrief Secondary School",
+      userGraduated:
+        "Studies at Faculty of Computers and Information Zagazig University",
       userPlace: "MeetGhamer",
       userState: "Single",
       detailsPopup: false,
-      // Edited User Info
-      userWorkEdited: "",
-      userEducationEdited: [],
-      userPlaceEdited: "",
-      userStateEdited: "",
+      // Statistics (posts number, followers, following)
+      stats: [
+        {
+          statTitle: "posts",
+          statNum: 0,
+        },
+        {
+          statTitle: "followers",
+          statNum: 500,
+        },
+        {
+          statTitle: "following",
+          statNum: 1000,
+        },
+      ],
     };
   },
   methods: {
@@ -268,10 +319,34 @@ export default {
     hideDetailsPopup() {
       this.detailsPopup = false;
     },
+    // Function That Delete The Required Post
+    deletePost(value) {
+      this.$store.state.posts = this.$store.state.posts.filter(
+        (post) => post != value
+      );
+    },
+  },
+  computed: {
+    // Get The First Name from The Profile Name
+    firstName() {
+      return this.profileName.substring(0, this.profileName.indexOf(" "));
+    },
+    // Get The Length of The data => Posts
+    postsLength() {
+      return (this.stats[0].statNum = this.posts.length);
+    },
+    posts() {
+      return this.$store.state.posts.filter(
+        (post) =>
+          post.postProfileName == this.profileName &&
+          post.postProfileImg == this.profileImg
+      );
+    },
   },
   components: {
     LeftSide,
     Post,
+    CreatePost,
   },
 };
 </script>
@@ -320,11 +395,25 @@ export default {
 }
 
 .personal-info i,
-.details-container h3 {
+.details-container h3,
+.stat h4,
+.bio p {
   color: #0d6efd;
 }
 
-.personal-info h4 span {
+.personal-info h4 span,
+.stat p,
+.no-personal-info h3,
+h3.no-post {
   color: #2d435e;
+}
+
+.stat:last-of-type {
+  border: 0 !important;
+}
+
+.stat h4,
+.stat p {
+  font-size: 18px;
 }
 </style>

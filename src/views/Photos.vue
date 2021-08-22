@@ -30,12 +30,16 @@
             user-info
             d-flex
             mb-2
+            p-2
+            px-3
             align-items-center
             justify-content-between
+            bg-white
+            rounded-3
           "
         >
           <!-- User Info (username and user Profile Img) -->
-          <div class="d-flex align-items-center bg-white p-2 px-3 rounded-3">
+          <div class="d-flex align-items-center">
             <img
               @click="$router.push('/profile')"
               :src="profileImg"
@@ -52,9 +56,6 @@
               align-items-center
               justify-content-between
               w-50
-              bg-white
-              p-3
-              rounded-3
               mb-0
             "
           >
@@ -88,7 +89,7 @@
           class="
             photos
             d-flex
-            justify-content-between
+            justify-content-around
             flex-wrap
             overflow-auto
             mb-3
@@ -181,7 +182,19 @@ export default {
         {
           imgClass: "beforeYear",
           img: require("@/assets/Stories-Images/third.jpg"),
-        }
+        },
+        {
+          imgClass: "beforeMonth",
+          img: require("@/assets/Profile-Images/last.jpg"),
+        },
+        {
+          imgClass: "recent",
+          img: require("@/assets/Invitaions-Images/company-profile.jpg"),
+        },
+        {
+          imgClass: "beforeYear",
+          img: require("@/assets/Invitaions-Images/company.jpg"),
+        },
       ],
       targetImages: [],
       popupImgSrc: "",

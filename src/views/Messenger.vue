@@ -39,20 +39,10 @@
                 p-3
                 bg-white
                 d-flex
-                justify-content-between
+                justify-content-end
                 align-items-center
               "
             >
-              <i
-                class="
-                  fas
-                  fa-ellipsis-v
-                  d-flex
-                  align-items-center
-                  justify-content-center
-                  rounded-circle
-                "
-              ></i>
               <div class="d-flex align-items-center">
                 <h4 class="fs-6 fw-bold mb-0">{{ currentChat.profileName }}</h4>
                 <img
@@ -65,20 +55,57 @@
             <!-- Content of The Chat -->
             <div class="in-chat w-100 p-3 overflow-auto">
               <div
-                v-if="messages"
-                class="
-                  h-100
-                  w-100
-                  d-flex
-                  flex-column
-                  justify-content-end
-                  overflow-hidden
-                "
+                class="chats-container h-100 w-100 d-block overflow-auto"
+                id="chatMsgs"
               >
+                <!-- Will Appear if user Recieved Message -->
+                <h3
+                  v-for="message in msgsRecieved"
+                  :key="message"
+                  class="
+                    recieved-msg
+                    text-msg
+                    d-flex
+                    align-items-center
+                    text-white
+                    mb-0
+                    mt-2
+                    overflow-hidden
+                  "
+                >
+                  <i
+                    class="
+                      fas
+                      fa-check
+                      ms-2
+                      d-flex
+                      align-items-center
+                      justify-content-center
+                      rounded-3
+                    "
+                  ></i>
+                  <p
+                    class="
+                      fs-6
+                      like-msg
+                      p-2
+                      px-3
+                      d-inline-block
+                      mb-0
+                      lh-base
+                      rounded-3
+                      overflow-hidden
+                    "
+                  >
+                    {{ message }}
+                  </p>
+                </h3>
+                <!-- Will Appear if user Send Message -->
                 <h3
                   v-for="message in messages"
                   :key="message"
                   class="
+                    text-msg
                     d-flex
                     align-items-center
                     text-white
@@ -99,6 +126,22 @@
                     "
                   ></i>
                   <p
+                    v-if="message == ':like:'"
+                    :class="`
+                      fs-6
+                      like-msg
+                      p-2
+                      px-0
+                      d-inline-block
+                      mb-0
+                      lh-base
+                      rounded-3
+                      overflow-hidden
+                    `"
+                  >
+                    <i class="like fs-3 far fa-thumbs-up"></i>
+                  </p>
+                  <p
                     class="
                       fs-6
                       p-2
@@ -109,6 +152,7 @@
                       rounded-3
                       overflow-hidden
                     "
+                    v-else
                   >
                     {{ message }}
                   </p>
@@ -133,7 +177,7 @@
                 class="form-control fs-6 p-3 me-3 rounded-3 border-0"
                 rows="1"
               ></textarea>
-              <i class="fs-3 far fa-thumbs-up"></i>
+              <i class="fs-3 far fa-thumbs-up" @click="sendLikeMsg"></i>
             </div>
           </div>
         </div>
@@ -145,6 +189,7 @@
         <!-- Search for Friend to Chat with -->
         <div class="profile d-flex align-items-center mb-4 p-4 pb-0">
           <img
+            @click="$router.push('/profile')"
             :src="profileImg"
             class="profile-img me-3"
             :title="profileName"
@@ -250,62 +295,72 @@ export default {
           id: 1,
           profileImg: require("@/assets/Profile-Images/first-profile.jpg"),
           profileName: "Mohamed Salem",
-          chatMessages: ["Hello I am Mohamed Salem", "How Are u ?"],
+          recievedMsg: ["Hello I am Mohamed Salem", "? How are u"],
+          chatMessages: ["Hello I am Mohamed Salem", "Fine Thanks!"],
         },
         {
           id: 2,
           profileImg: require("@/assets/Profile-Images/second-profile.jpg"),
           profileName: "Ahmed Salem",
-          chatMessages: ["Hello I am Ahmed Salem", "How Are u ?"],
+          recievedMsg: ["Hello I am Ahmed Salem", "? How are u"],
+          chatMessages: ["Hello I am Mohamed Salem", "Fine Thanks!"],
         },
         {
           id: 3,
           profileImg: require("@/assets/Profile-Images/third-profile.png"),
           profileName: "Mohamed Ahmed",
-          chatMessages: ["Hello I am Mohamed Ahmed"],
+          recievedMsg: ["Hello I am Mohamed Ahmed", "? How are u"],
+          chatMessages: ["Hello I am Mohamed Salem", "Fine Thanks!"],
         },
         {
           id: 4,
           profileImg: require("@/assets/Profile-Images/forth-profile.jpg"),
           profileName: "Ali Ahmed",
-          chatMessages: [],
+          recievedMsg: ["Hello I am Ali Ahmed", "? How are u"],
+          chatMessages: ["Hello I am Mohamed Salem", "Fine Thanks!"],
         },
         {
           id: 5,
           profileImg: require("@/assets/Profile-Images/fifth-profile.jpg"),
           profileName: "Moustafa Mohamed",
           deliveredMsg: 0,
-          chatMessages: ["Hello I am Moustafa Mohamed"],
+          recievedMsg: ["Hello I am Moustafa Mohamed", "? How are u"],
+          chatMessages: ["Hello I am Mohamed Salem", "Fine Thanks!"],
         },
         {
           id: 6,
           profileImg: require("@/assets/Profile-Images/sixth.jpg"),
           profileName: "Islam Mohamed",
-          chatMessages: [],
+          recievedMsg: ["Hello I am Islam Mohamed", "? How are u"],
+          chatMessages: ["Hello I am Mohamed Salem", "Fine Thanks!"],
         },
         {
           id: 7,
           profileImg: require("@/assets/Profile-Images/seventh.jpg"),
           profileName: "mahmoud Ahmed",
-          chatMessages: [],
+          recievedMsg: ["Hello I am mahmoud Ahmed", "? How are u"],
+          chatMessages: ["Hello I am Mohamed Salem", "Fine Thanks!"],
         },
         {
           id: 8,
           profileImg: require("@/assets/Profile-Images/eighth.jpeg"),
           profileName: "Mohamed Sayed",
-          chatMessages: ["Hello I am Mohamed Sayed", "How Are u ?"],
+          recievedMsg: ["Hello I am Mohamed Sayed", "How Are u ?"],
+          chatMessages: ["Hello I am Mohamed Salem", "Fine Thanks!"],
         },
         {
           id: 9,
           profileImg: require("@/assets/Profile-Images/nineth.jpeg"),
           profileName: "Ahmed Sayed",
-          chatMessages: [],
+          recievedMsg: ["Hello I am Ahmed Sayed", "? How are u"],
+          chatMessages: ["Hello I am Mohamed Salem", "Fine Thanks!"],
         },
       ],
       currentChat: {
         profileName: "",
         profileImg: "",
         messages: [],
+        recieved: [],
       },
       newMessage: "",
     };
@@ -320,10 +375,17 @@ export default {
     },
     // Function The Send New Message In Chats
     addingNewMessage(e) {
+      if (e.keyCode == 13 && !e.shiftKey) {
+        e.preventDefault();
+      }
       if (/\S/.test(this.newMessage) && e.keyCode == 13 && !e.shiftKey) {
         e.preventDefault();
+        // Pushing The Ne Message to The Chat Container
         this.currentChat.messages.push(e.target.value);
         e.target.setAttribute("rows", "1");
+        // Function That Scroll to The Bottom of The Chat
+        this.scrollToBottom();
+        // Clearing The Textarea Text
         this.newMessage = "";
       } else if (e.keyCode == 13 && e.shiftKey) {
         e.target.setAttribute(
@@ -331,6 +393,22 @@ export default {
           parseInt(e.target.getAttribute("rows")) + 1
         );
       }
+    },
+    // Function That Send Like as a Message
+    sendLikeMsg() {
+      this.currentChat.messages.push(":like:");
+      this.scrollToBottom();
+    },
+    // Function That Show and Hide Clear Chat Btn
+    toggleClearBtn() {
+      document.querySelector(".clear-chat").classList.toggle("d-none");
+    },
+    // Function That Scroll to Bottom of The Chat
+    scrollToBottom() {
+      let msgs = document.getElementById("chatMsgs");
+      setTimeout(function () {
+        msgs.scrollTop = msgs.scrollHeight;
+      }, 10);
     },
   },
   computed: {
@@ -348,6 +426,13 @@ export default {
         )[0].chatMessages);
       }
     },
+    msgsRecieved() {
+      if (this.$route.params.id) {
+        return (this.currentChat.recieved = this.chats.filter(
+          (chat) => chat.id == this.$route.params.id
+        )[0].recievedMsg);
+      }
+    },
   },
   mounted() {
     // Declaring The Page Id and The chat That has The Same Id
@@ -363,6 +448,10 @@ export default {
 </script>
 
 <style scoped>
+.chats-container {
+  height: calc(100vh - 19rem) !important;
+}
+
 .chat-container,
 .chat-content,
 .chats {
@@ -393,12 +482,19 @@ export default {
   overflow-wrap: break-word;
 }
 
-.in-chat h3 p,
-.in-chat h3 i {
+.in-chat h3 p:not(p.like-msg),
+.in-chat h3 i:not(i.like),
+.recieved-msg p {
   background-color: #0d6efd;
 }
 
-.in-chat h3 i:first-of-type {
+.recieved-msg {
+  direction: rtl !important;
+}
+
+/* .in-chat i.like */
+
+.in-chat h3 i:first-of-type:not(i.like) {
   width: 18px;
   height: 18px;
   font-size: 11px !important;
@@ -409,7 +505,19 @@ export default {
   width: 35px;
 }
 
-.chat-footer i {
+.clear-chat {
+  min-width: 130px;
+  left: 60px;
+}
+
+.clear-chat button:hover {
+  background-color: #2d435e !important;
+  border-color: #2d435e !important;
+  color: #fff;
+}
+
+.chat-footer i,
+i.like {
   color: #0d6efd;
 }
 

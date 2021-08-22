@@ -29,7 +29,7 @@ const routes = [
     path: "/photos",
     name: "Photos",
     component: Photos,
-  }
+  },
 ];
 
 const router = createRouter({
